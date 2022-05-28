@@ -8,6 +8,7 @@ from streamlit_lottie import st_lottie
 from datetime import datetime
 
 st.set_page_config(page_title="Face Recognition",layout="wide")
+##to get the url of the animation
 def load_lottieurl(url):
     r = requests.get(url)
     if r.status_code !=200:
@@ -30,8 +31,9 @@ with st.container():
         st.write(
                   """
                   Whenever a human will pass through the webcam,
-                  the webcam will check if the face is matching with any of the previous records,
-                  if it is then it will display it's name. 
+                  the webcam will check if the face is matching with any of the images already stored in the records,
+                  if it is then it will mark it's attendance by displaying his/her name and time of arrival in 
+                  the excel sheet . Remember to open the excel sheet after attendance of all the students have been marked.
                   """
                  )
     with right_column:
@@ -39,18 +41,20 @@ with st.container():
 
 
 run=st.checkbox('Run')
-Frame_window=st.image([])
-path='Attendanceimages'
+Frame_window=st.image([])  #stores output of camera
+path='Attendanceimages'    #stores the directory
 images=[]
 names=[]
 list=os.listdir(path)
-print(list)
 
+##taking all the images from the path and storing the names
 for c in list:
     currentimage=cv2.imread(f'{path}/{c}')
     images.append(currentimage)
     names.append(os.path.splitext(c)[0])
 
+
+##finding the encodings (128 points)
 def findencoding(images):
     encodelist=[]
     for img in images:
@@ -58,7 +62,7 @@ def findencoding(images):
         encode=face_recognition.face_encodings(img)[0]
         encodelist.append(encode)
     return encodelist
-
+##to mark the attendance(name and time) in an excel sheet
 def markattendance(name):
     with open('Attendance.csv', 'r+') as f:
         mydatalist= f.readlines()
@@ -74,11 +78,11 @@ def markattendance(name):
 encodelistknown=findencoding(images)
 
 cap=cv2.VideoCapture(0)
-
+##checks if face is matching
 while run:
     success,img=cap.read()
     img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-    imgsmall=cv2.resize(img,(0,0),None,0.25,0.25)
+    imgsmall=cv2.resize(img,(0,0),None,0.25,0.25)   ##to make a little bit faster
     imgsmall=cv2.cvtColor(imgsmall,cv2.COLOR_BGR2RGB)
 
     facescurrentframe=face_recognition.face_locations(imgsmall)
@@ -102,6 +106,8 @@ while run:
 
 else:
     st.write('Stopped')
+
+
 
 
 
